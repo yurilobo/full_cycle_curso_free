@@ -1,23 +1,32 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
+
+func worker(workerID int, data chan int) {
+	for x := range data {
+		time.Sleep(time.Second)
+		fmt.Printf("Worker %d received %d\n", workerID, x)
+
+	}
+
+}
 
 func main() {
-	ch := make(chan chan int)
-	go publish(ch)
-	consume(ch)
-}
-func publish(canal chan int) {
-	for i := 0; i < 10; i++ {
-		canal <- i
+	ch := make(chan int) //cria o canal
+	go worker(1, ch)     //inicia  o processador
+	//go worker(2, ch)        //dois processamentos
+	qtdWorkers := 10
+
+	for i := 0; i < qtdWorkers; i++ {
+		go worker(i, ch)
 	}
-	close(canal)
+
+	for i := 0; i < 15; i++ { //procesa o canal
+		ch <- i
+	}
 }
 
-func consume(canal chan int) {
-	for x := range canal { //esvazia o canal
-		fmt.Println("Mensagem Processada:", x)
-
-	}
-	fmt.Println("Todos os itens foram processados")
-}
+//nesse caso temos workers trabalhando de forma paralelas em cores diferentes da maquina
