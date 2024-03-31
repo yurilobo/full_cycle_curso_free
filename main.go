@@ -3,14 +3,21 @@ package main
 import "fmt"
 
 func main() {
-	canal := make(chan string)
+	ch := make(chan chan int)
+	go publish(ch)
+	consume(ch)
+}
+func publish(canal chan int) {
+	for i := 0; i < 10; i++ {
+		canal <- i
+	}
+	close(canal)
+}
 
-	//T2
-	go func() {
-		canal <- "Golang Conference!"
-	}()
+func consume(canal chan int) {
+	for x := range canal { //esvazia o canal
+		fmt.Println("Mensagem Processada:", x)
 
-	//T1
-	msg := <-canal
-	fmt.Println((msg))
+	}
+	fmt.Println("Todos os itens foram processados")
 }
